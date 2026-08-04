@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Counter - Smart Work Hub</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:700px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,.2);
+}
+
+textarea{
+width:100%;
+height:220px;
+padding:10px;
+font-size:18px;
+}
+
+.result{
+margin-top:20px;
+font-size:20px;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📝 Word Counter</h1>
+
+<textarea id="text" placeholder="Type or paste your text here..." oninput="countText()"></textarea>
+
+<div class="result">
+<p>Words: <span id="words">0</span></p>
+<p>Characters: <span id="chars">0</span></p>
+<p>Sentences: <span id="sentences">0</span></p>
+</div>
+
+</div>
+
+<script>
+function countText(){
+
+let text=document.getElementById("text").value;
+
+document.getElementById("chars").innerHTML=text.length;
+
+let words=text.trim();
+
+if(words===""){
+document.getElementById("words").innerHTML=0;
+}else{
+document.getElementById("words").innerHTML=words.split(/\s+/).length;
+}
+
+let sentences=text.split(/[.!?]+/).filter(s=>s.trim()!="").length;
+
+document.getElementById("sentences").innerHTML=sentences;
+
+}
+</script>
+
+</body>
+</html>
