@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Compressor - Smart Work Hub</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  padding:20px;
+}
+
+.container{
+  max-width:650px;
+  margin:30px auto;
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);
+  text-align:center;
+}
+
+h1{color:#2563eb;}
+
+input{
+  margin:15px 0;
+  max-width:100%;
+}
+
+.controls{
+  margin:15px 0;
+}
+
+label{
+  font-weight:bold;
+}
+
+input[type="range"]{
+  width:90%;
+}
+
+button{
+  padding:12px 20px;
+  border:0;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  margin:8px;
+  cursor:pointer;
+}
+
+button:disabled{
+  background:#999;
+}
+
+.preview img{
+  max-width:100%;
+  max-height:300px;
+  margin:15px 0;
+  border-radius:8px;
+}
+
+.info{
+  line-height:1.8;
+}
+
+.error{
+  color:#d00;
+}
+
+.success{
+  color:green;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🖼️ Image Compressor</h1>
+
+<p>Compress an image directly in your browser.</p>
+
+<input type="file" id="imageInput" accept="image/*">
+
+<div class="controls">
+
+<label>
+Quality:
+<span id="qualityValue">70%</span>
+</label>
+
+<br>
+
+<input
+type="range"
+id="quality"
+min="10"
+max="100"
+value="70"
+oninput="updateQuality()"
+>
+
+</div>
+
+<button onclick="compressImage()">Compress Image</button>
+
+<button id="downloadBtn" onclick="downloadImage()" disabled>
+Download Compressed Image
+</button>
+
+<div id="message"></div>
+
+<div class="preview" id="preview"></div>
+
+<div class="info" id="info"></div>
+
+</div>
+
+<script>
+
+let compressedData = null;
+
+function updateQuality(){
+
+  const quality =
+    document.getElementById("quality").value;
+
+  document.getElementById("qualityValue").textContent =
+    quality + "%";
+}
+
+function compressImage(){
+
+  const input =
+    document.getElementById("imageInput");
+
+  const message =
+    document.getElementById("message");
+
+  const preview =
+    document.getElementById("preview");
+
+  const info =
+    document.getElementById("info");
+
+  const downloadBtn =
+    document.getElementById("downloadBtn");
+
+  if(!input.files || !input.files[0]){
+
+    message.innerHTML =
+      '<p class="error">Please select an image first.</p>';
+
+    return;
+  }
+
+  const file = input.files[0];
+
+  if(!file.type.startsWith("image/")){
+
+    message.innerHTML =
+      '<p class="error">Please select a valid image.</p>';
+
+    return;
+  }
+
+  const quality =
+    parseInt(document.getElementById("quality").value) / 100;
+
+  const reader = new FileReader();
+
+  reader.onload = function(event){
+
+    const img = new Image();
+
+    img.onload = function(){
+
+      const canvas =
+        document.createElement("canvas");
+
+      let width = img.width;
+      let height = img.height;
+
+      const maxSize = 2000;
+
+      if(width > maxSize || height > maxSize){
+
+        if(width > height){
+
+          height =
+            Math.round(height * maxSize / width);
+
+          width = maxSize;
+
+        }else{
+
+          width =
+            Math.round(width * maxSize / height);
+
+          height = maxSize;
+
+        }
+
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        width,
+        height
+      );
+
+      compressedData =
+        canvas.toDataURL("image/jpeg", quality);
+
+      const originalSize =
+        file.size;
+
+      const base64Length =
+        compressedData.length -
+        compressedData.indexOf(",") - 1;
+
+      const compressedSize =
+        Math.round(base64Length * 0.75);
+
+      const reduction =
+        originalSize > 0
+        ? Math.max(
+            0,
+            (1 - compressedSize / originalSize) * 100
+          )
+        : 0;
+
+      preview.innerHTML =
+        "<img src='" +
+        compressedData +
+        "' alt='Compressed image preview'>";
+
+      info.innerHTML =
+        "<strong>Original size:</strong> " +
+        formatBytes(originalSize) +
+        "<br>" +
+        "<strong>Compressed size:</strong> " +
+        formatBytes(compressedSize) +
+        "<br>" +
+        "<strong>Approx. reduction:</strong> " +
+        reduction.toFixed(1) +
+        "%";
+
+      message.innerHTML =
+        '<p class="success">Image compressed successfully!</p>';
+
+      downloadBtn.disabled = false;
+
+    };
+
+    img.src = event.target.result;
+
+  };
+
+  reader.readAsDataURL(file);
+
+}
+
+function downloadImage(){
+
+  if(!compressedData){
+    return;
+  }
+
+  const link =
+    document.createElement("a");
+
+  link.href = compressedData;
+
+  link.download =
+    "compressed-image.jpg";
+
+  link.click();
+
+}
+
+function formatBytes(bytes){
+
+  if(bytes === 0){
+    return "0 Bytes";
+  }
+
+  const units =
+    ["Bytes","KB","MB","GB"];
+
+  const i =
+    Math.floor(
+      Math.log(bytes) / Math.log(1024)
+    );
+
+  return (
+    bytes / Math.pow(1024,i)
+  ).toFixed(2) +
+  " " +
+  units[i];
+}
+
+</script>
+
+</body>
+  </html>
