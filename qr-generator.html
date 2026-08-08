@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Generator - Smart Work Hub</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  padding:20px;
+}
+
+.container{
+  max-width:600px;
+  margin:40px auto;
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);
+  text-align:center;
+}
+
+h1{
+  color:#2563eb;
+}
+
+textarea{
+  width:90%;
+  height:100px;
+  padding:12px;
+  font-size:16px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  resize:vertical;
+}
+
+button{
+  padding:12px 20px;
+  border:0;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  margin:12px 5px;
+  cursor:pointer;
+}
+
+#qrcode{
+  margin:25px auto;
+  display:flex;
+  justify-content:center;
+}
+
+#message{
+  color:green;
+  min-height:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📱 QR Code Generator</h1>
+
+<p>Enter text or a website link and create a QR code.</p>
+
+<textarea id="text" placeholder="Enter text or URL here..."></textarea>
+
+<br>
+
+<button onclick="generateQR()">Generate QR Code</button>
+<button onclick="clearQR()">Clear</button>
+
+<div id="qrcode"></div>
+
+<p id="message"></p>
+
+</div>
+
+<script>
+
+function generateQR(){
+
+let text = document.getElementById("text").value.trim();
+let qr = document.getElementById("qrcode");
+let message = document.getElementById("message");
+
+qr.innerHTML = "";
+message.textContent = "";
+
+if(text === ""){
+  message.textContent = "Please enter some text or a URL.";
+  return;
+}
+
+let img = document.createElement("img");
+
+img.width = 220;
+img.height = 220;
+
+img.src =
+"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="
++ encodeURIComponent(text);
+
+img.onload = function(){
+  message.textContent = "QR Code created successfully!";
+};
+
+img.onerror = function(){
+  message.textContent = "Unable to create QR Code. Please try again.";
+};
+
+qr.appendChild(img);
+
+}
+
+function clearQR(){
+
+document.getElementById("text").value = "";
+document.getElementById("qrcode").innerHTML = "";
+document.getElementById("message").textContent = "";
+
+}
+
+</script>
+
+</body>
+</html>
